@@ -1,4 +1,4 @@
-<script>
+<script runat=server>
     Platform.Load("core","1");
     var end_point = "https://teranga-cloud.xidmapreview.com/api/v1/";
     var api_key = "oauth_token=ydfwryYOCUGLRwEBj7C9m7ipSsUnksGr";
@@ -19,3 +19,4 @@
         }
     }
 </script>
+
