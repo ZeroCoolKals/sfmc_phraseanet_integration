@@ -1,0 +1,308 @@
+<style>
+    body {
+        font-family: sans-serif;
+        background-color: #eeeeee;
+    }
+
+    .send-button {
+        margin-top: 10px;
+        width: 150px;
+        height: 50px;
+        background-color: #629dd1;
+        border: none;
+        color: white;
+        font-weight: bold;
+    }
+
+    .send-button:hover {
+        cursor: pointer;
+    }
+
+    .file-upload {
+        background-color: #ffffff;
+        width: 600px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+
+    .file-upload-btn {
+        width: 100%;
+        margin: 0;
+        color: #fff;
+        background: #1FB264;
+        border: none;
+        padding: 10px;
+        border-radius: 4px;
+        border-bottom: 4px solid #15824B;
+        transition: all .2s ease;
+        outline: none;
+        text-transform: uppercase;
+        font-weight: 700;
+    }
+
+    .file-upload-btn:hover {
+        background: #1AA059;
+        color: #ffffff;
+        transition: all .2s ease;
+        cursor: pointer;
+    }
+
+    .file-upload-btn:active {
+        border: 0;
+        transition: all .2s ease;
+    }
+
+    .file-upload-content {
+        display: none;
+        text-align: center;
+    }
+
+    .file-upload-input {
+        position: absolute;
+        margin: 0;
+        padding: 0;
+        width: 100%;
+        height: 100%;
+        outline: none;
+        opacity: 0;
+        cursor: pointer;
+    }
+
+    .image-upload-wrap {
+        margin-top: 20px;
+        border: 4px dashed #1FB264;
+        position: relative;
+    }
+
+    .image-dropping,
+    .image-upload-wrap:hover {
+        background-color: #1FB264;
+        border: 4px dashed #ffffff;
+    }
+
+    .image-title-wrap {
+        padding: 0 15px 15px 15px;
+        color: #222;
+    }
+
+    .drag-text {
+        text-align: center;
+    }
+
+    .drag-text h3 {
+        font-weight: 100;
+        text-transform: uppercase;
+        color: #15824B;
+        padding: 60px 0;
+    }
+
+    .file-upload-image {
+        max-height: 200px;
+        max-width: 200px;
+        margin: auto;
+        padding: 20px;
+    }
+
+    .remove-image {
+        width: 200px;
+        margin: 0;
+        color: #fff;
+        background: #cd4535;
+        border: none;
+        padding: 10px;
+        border-radius: 4px;
+        border-bottom: 4px solid #b02818;
+        transition: all .2s ease;
+        outline: none;
+        text-transform: uppercase;
+        font-weight: 700;
+    }
+
+    .remove-image:hover {
+        background: #c13b2a;
+        color: #ffffff;
+        transition: all .2s ease;
+        cursor: pointer;
+    }
+
+    .remove-image:active {
+        border: 0;
+        transition: all .2s ease;
+    }
+</style>
+<script class="jsbin" src="https://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js"></script>
+
+<div class="file-upload">
+    <button class="file-upload-btn" type="button" onclick="$('.file-upload-input').trigger( 'click' )">Add
+        Image</button>
+
+    <div class="image-upload-wrap">
+        <input class="file-upload-input" name="fileList[]" type='file' onchange="readURL(this);" accept="image/*" multiple />
+        <div class="drag-text">
+            <h3>Drag and drop a file or select add Image</h3>
+        </div>
+    </div>
+    <div class="file-upload-content">
+        <img class="file-upload-image" src="#" alt="your image" />
+        <div class="image-title-wrap">
+            <button type="button" onclick="removeUpload()" class="remove-image">Remove <span
+                    class="image-title">Uploaded Image</span></button>
+        </div>
+    </div>
+    <div>
+        <input type="button" value="Push asset" class="send-button">
+    </div>
+</div>
+
+<script>
+
+    var fileDataList = [];
+    var assetTypes =  { ai: 16, psd: 17, pdd: 18, eps: 19, gif: 20, jpe: 21, jpeg: 22, jpg: 23, jp2: 24, jpx: 25, pict: 26, pct: 27, png: 28, tif: 29, tiff: 30, tga: 31, bmp: 32, wmf: 33, vsd: 34, pnm: 35, pgm: 36, pbm: 37, ppm: 38, svg: 39, "3fr": 40, ari: 41, arw: 42, bay: 43, cap: 44, crw: 45, cr2: 46, dcr: 47, dcs: 48, dng: 49, drf: 50, eip: 51, erf: 52, fff: 53, iiq: 54, k25: 55, kdc: 56, mef: 57, mos: 58, mrw: 59, nef: 60, nrw: 61, orf: 62, pef: 63, ptx: 64, pxn: 65, raf: 66, raw: 67, rw2: 68, rwl: 69, rwz: 70, srf: 71, sr2: 72, srw: 73, x3f: 74, "3gp": 75, "3gpp": 76, "3g2": 77, "3gp2": 78, asf: 79, avi: 80, m2ts: 81, mts: 82, dif: 83, dv: 84, mkv: 85, mpg: 86, f4v: 87, flv: 88, mjpg: 89, mjpeg: 90, mxf: 91, mpeg: 92, mp4: 93, m4v: 94, mp4v: 95, mov: 96, swf: 97, wmv: 98, rm: 99, ogv: 100, indd: 101, indt: 102, incx: 103, wwcx: 104, doc: 105, docx: 106, dot: 107, dotx: 108, mdb: 109, mpp: 110, ics: 111, xls: 112, xlsx: 113, xlk: 114, xlsm: 115, xlt: 116, xltm: 117, csv: 118, tsv: 119, tab: 120, pps: 121, ppsx: 122, ppt: 123, pptx: 124, pot: 125, thmx: 126, pdf: 127, ps: 128, qxd: 129, rtf: 130, sxc: 131, sxi: 132, sxw: 133, odt: 134, ods: 135, ots: 136, odp: 137, otp: 138, epub: 139, dvi: 140, key: 141, keynote: 142, pez: 143, aac: 144, m4a: 145, au: 146, aif: 147, aiff: 148, aifc: 149, mp3: 150, wav: 151, wma: 152, midi: 153, oga: 154, ogg: 155, ra: 156, vox: 157, voc: 158, "7z": 159, arj: 160, bz2: 161, cab: 162, gz: 163, gzip: 164, iso: 165, lha: 166, sit: 167, tgz: 168, jar: 169, rar: 170, tar: 171, zip: 172, gpg: 173, htm: 174, html: 175, xhtml: 176, xht: 177, css: 178, less: 179, sass: 180, js: 181, json: 182, atom: 183, rss: 184, xml: 185, xsl: 186, xslt: 187, md: 188, markdown: 189, as: 190, fla: 191, eml: 192, text: 193, txt: 194, freeformblock: 195, textblock: 196, htmlblock: 197, textplusimageblock: 198, imageblock: 199, abtestblock: 200, dynamicblock: 201, stylingblock: 202, einsteincontentblock: 203, webpage: 205, webtemplate: 206, templatebasedemail: 207, htmlemail: 208, textonlyemail: 209, socialshareblock: 210, socialfollowblock: 211, buttonblock: 212, layoutblock: 213, defaulttemplate: 214, smartcaptureblock: 215, smartcaptureformfieldblock: 216, smartcapturesubmitoptionsblock: 217, slotpropertiesblock: 218, externalcontentblock: 219, codesnippetblock: 220, rssfeedblock: 221, formstylingblock: 222, referenceblock: 223, imagecarouselblock: 224, customblock: 225, liveimageblock: 226, livesettingblock: 227, contentmap: 228, jsonmessage: 230 };
+
+    function readURL(input) {
+        if (input.files) {
+            for (i = 0; i < input.files.length; i++) {
+                console.log('Nb file '+input.files.length);
+                //var reader = new FileReader();
+                $('.image-upload-wrap').hide();
+                getBase64(input.files[i]);
+            }
+        
+        } else {
+            removeUpload();
+        }
+    }
+
+    function getBase64(file) {
+        var reader = new FileReader();
+        var fileData = {};
+
+        reader.readAsDataURL(file);
+        reader.onload = function() {
+            //prepare data 
+            var fileEncoded = reader.result;
+            var base64enc = fileEncoded.split(";base64,")[1];
+            var fileName = file.name;
+
+            fileData.fileName = fileName.split(".")[0];
+            fileData.assetName = fileName.split(".")[1];
+            fileData.base64enc = base64enc;
+            fileData.assetTypeID = assetTypes[fileData.assetName.toLowerCase()];
+
+            //console.log("type "+fileData.assetType);
+            fileDataList.push(fileData);  
+            console.log("Name " +fileData.fileName);
+            console.log("Ext "+fileData.assetName);
+            console.log("Asset ID "+ fileData.assetTypeID);
+
+            console.log("Base64 "+fileData.base64enc);
+
+        };
+        reader.onerror = function(error) {
+            console.log('Error: ', error);
+        };
+    }
+
+    function removeUpload() {
+        $('.file-upload-input').replaceWith($('.file-upload-input').clone());
+        $('.file-upload-content').hide();
+        $('.image-upload-wrap').show();
+    }
+    $('.image-upload-wrap').bind('dragover', function () {
+        $('.image-upload-wrap').addClass('image-dropping');
+    });
+    $('.image-upload-wrap').bind('dragleave', function () {
+        $('.image-upload-wrap').removeClass('image-dropping');
+    });
+</script>
+
+
+
+
+<script runat="server">
+    Platform.Load("core", "1.1.1");
+
+    var end_point = "";
+    var accessToken = "";
+    var asset_path = "asset/v1/content/assets";
+    var contentType = 'application/json';
+    var token_lifetime = 0;
+
+    function auth() {
+        var authEndpoint = 'https://mcc2gk-bp085x9503lcvgdlxx944.auth.marketingcloudapis.com';
+        var url = authEndpoint + '/v2/token';
+
+        var payload = {
+            client_id: "6jbz9ag4cdwumfc6x4s7fcjx",
+            client_secret: "Z5b6GIstJzY5BcuLKp9UcAEC",
+            grant_type: "client_credentials"
+        };
+
+        try {
+            var accessTokenRequest = HTTP.Post(url, contentType, Stringify(payload));
+            if (accessTokenRequest.StatusCode == 200) {
+                var response_body = Platform.Function.ParseJSON(accessTokenRequest.Response[0]);
+                accessToken = response_body.access_token;
+                end_point = response_body.rest_instance_url;
+                token_lifetime = response_body.expires_in;
+            }
+        } catch (error) {
+            Write(Stringify(error));
+        }
+
+        Write(Stringify(token_lifetime));
+
+    }
+
+    auth();
+
+    function create_asset(fileList) {
+
+        // file list not empty
+        // token not expired
+        auth();
+        var headerNames = ["Authorization"];
+        var headerValues = ["Bearer " + accessToken];
+        var requestUrl = end_point + "asset/v1/content/assets";
+
+        //BEGIN LOOP 
+        if(fileList.length > 0){
+            var jsonBody = {
+                "name": fileList[i].fileName,
+                "assetType": {
+                    "name": fileList[i].assetName,
+                    "id": fileList[i].assetTypeID
+                },
+                "file": fileList[i].base64enc
+            };
+    
+            var createAsset = HTTP.Post(requestUrl, contentType, Stringify(jsonBody), headerNames, headerValues);
+        }
+        // END LOOP
+    }
+
+    
+
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
