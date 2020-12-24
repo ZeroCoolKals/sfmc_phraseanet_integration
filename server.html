@@ -1,0 +1,64 @@
+<script runat="server">
+    Platform.Load("core", "1");
+
+    var jsonData = Platform.Request.GetPostData();
+    var asset = Platform.Function.ParseJSON(jsonData);
+
+    var end_point = "";
+    var accessToken = "";
+    var asset_path = "asset/v1/content/assets";
+    var contentType = 'application/json';
+    var token_lifetime = 0;
+    var assetsResponse = [];
+
+    function auth() {
+        var authEndpoint = 'https://mcc2gk-bp085x9503lcvgdlxx944.auth.marketingcloudapis.com';
+        var url = authEndpoint + '/v2/token';
+
+        var payload = {
+            client_id: "6jbz9ag4cdwumfc6x4s7fcjx",
+            client_secret: "Z5b6GIstJzY5BcuLKp9UcAEC",
+            grant_type: "client_credentials"
+        };
+
+        try {
+            var accessTokenRequest = HTTP.Post(url, contentType, Stringify(payload));
+
+            if (accessTokenRequest.StatusCode == 200) {
+                var response_body = Platform.Function.ParseJSON(accessTokenRequest.Response[0]);
+                accessToken = response_body.access_token;
+                end_point = response_body.rest_instance_url;
+                token_lifetime = response_body.expires_in;
+            }
+        } catch (error) {
+            // Write(Stringify(error));
+        }
+
+        Write("token life cycle " + token_lifetime);
+
+    }
+
+    function createAsset() {
+
+        auth();
+        var headerNames = ["Authorization"];
+        var headerValues = ["Bearer " + accessToken];
+        var requestUrl = end_point + "asset/v1/content/assets";
+        Write("creating asset...");
+        Write("asset data " + asset);
+
+        var jsonBody = {
+            "name": asset.fileName,
+            "assetType": {
+                "name": asset.assetName,
+                "id": asset.assetTypeID
+            },
+            "file": asset.base64enc
+        };
+
+        var createdAsset = HTTP.Post(requestUrl, contentType, Stringify(jsonBody), headerNames, headerValues);
+       
+    }
+
+    createAsset();
+</script>
