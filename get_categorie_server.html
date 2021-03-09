@@ -1,3 +1,6 @@
+<h1>
+    PHRASEANET SERVER
+</h1>
 <script runat="server">
     Platform.Load("core", "1");
 
@@ -6,14 +9,14 @@
 
     var end_point = "";
     var accessToken = "";
-    var asset_path = "asset/v1/content/assets";
+    var categories_path = "asset/v1/content/categories/?$pagesize=20";
     var contentType = 'application/json';
     var token_lifetime = 0;
-    var assetsResponse = [];
 
     function auth() {
         var authEndpoint = 'https://mcc2gk-bp085x9503lcvgdlxx944.auth.marketingcloudapis.com';
-        var url = authEndpoint + '/v2/token';
+        var url
+            = authEndpoint + '/v2/token';
 
         var payload = {
             client_id: "6jbz9ag4cdwumfc6x4s7fcjx",
@@ -34,31 +37,36 @@
             // Write(Stringify(error));
         }
 
-        Write("token life cycle " + token_lifetime);
+        Write("token life cycle " + token_lifetime); Write("<br>")
 
     }
 
-    function createAsset() {
+    function getCategories() {
 
         auth();
         var headerNames = ["Authorization"];
         var headerValues = ["Bearer " + accessToken];
-        var requestUrl = end_point + "asset/v1/content/assets";
-        Write("creating asset...");
-        Write("asset data " + asset);
+        var requestUrl = end_point + categories_path;
+        Write("getting categories..."); Write("<br>")
 
-        var jsonBody = {
-            "name": asset.fileName,
-            "assetType": {
-                "name": asset.assetName,
-                "id": asset.assetTypeID
-            },
-            "file": asset.base64enc
-        };
+        try {
+            var response = HTTP.Get(requestUrl, headerNames, headerValues);
+            Write(Stringify(response));
+            if (response.StatusCode == 200) {
+                // send results
+            } else {
+                Write('error')
+            }
 
-        var createdAsset = HTTP.Post(requestUrl, contentType, Stringify(jsonBody), headerNames, headerValues);
-       
+        } catch (error) {
+            Write(Stringify(error));
+        }
     }
 
-    createAsset();
+    getCategories();
+
+
+
+
+
 </script>

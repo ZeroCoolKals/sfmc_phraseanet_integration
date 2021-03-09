@@ -1,14 +1,105 @@
+<script runat="server">
+    Platform.Load("core", "1");
+
+    var end_point = "";
+    var accessToken = "";
+    var categories_path = "asset/v1/content/categories/?$pagesize=20";
+    var contentType = 'application/json';
+    var token_lifetime = 0;
+
+    function auth() {
+        var authEndpoint = 'https://mcc2gk-bp085x9503lcvgdlxx944.auth.marketingcloudapis.com';
+        var url
+            = authEndpoint + '/v2/token';
+
+        var payload = {
+            client_id: "6jbz9ag4cdwumfc6x4s7fcjx",
+            client_secret: "Z5b6GIstJzY5BcuLKp9UcAEC",
+            grant_type: "client_credentials"
+        };
+
+        try {
+            var accessTokenRequest = HTTP.Post(url, contentType, Stringify(payload));
+
+            if (accessTokenRequest.StatusCode == 200) {
+                var response_body = Platform.Function.ParseJSON(accessTokenRequest.Response[0]);
+                accessToken = response_body.access_token;
+                end_point = response_body.rest_instance_url;
+                token_lifetime = response_body.expires_in;
+            }
+        } catch (error) {
+            // Write(Stringify(error));
+        }
+
+    }
+
+    function getCategories() {
+        auth();
+        var headerNames = ["Authorization"];
+        var headerValues = ["Bearer " + accessToken];
+        var requestUrl = end_point + categories_path;
+        try {
+            var response = HTTP.Get(requestUrl, headerNames, headerValues);
+            var content = Platform.Function.ParseJSON(response.Content)
+            Variable.SetValue("@data", Stringify(content.items));
+
+        } catch (error) {
+            Write(Stringify(error));
+        }
+    }
+    getCategories();
+
+
+</script>
 <meta charset="utf-8">
 <title>Phraseanet Demo</title>
+
+<!--ICONS8 -->
+
+<!--JQUERY  -->
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+
+<!--BOOTSTRAP -->
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js">
-</script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js">
-</script>
-<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js">
-</script>
+
+
+<!--JSTREE -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jstree/3.2.1/themes/default/style.min.css" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/1.12.1/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jstree/3.2.1/jstree.min.js"></script>
+
 
 <style>
+    h2 {
+        color: #aaa;
+        font-size: 30px;
+        line-height: 40px;
+        font-style: italic;
+        font-weight: 200;
+        margin: 40px;
+        text-align: center;
+        text-shadow: 1px 1px 1px rgba(255, 255, 255, 0.7);
+    }
+
+    .box {
+        background: #fff;
+        border-radius: 2px;
+        box-shadow: 0 0 50px rgba(0, 0, 0, 0.1);
+        margin: 30px 5%;
+        padding: 5%;
+    }
+
+    @media (min-width: 544px) {
+        .box {
+            margin: 40px auto;
+            max-width: 440px;
+            padding: 40px;
+        }
+    }
+
+
     .card {
         width: 20rem;
         margin: 2rem;
@@ -26,9 +117,9 @@
     }
 
     .btn-send {
-        display: block;
+        display: none;
         position: fixed;
-        right: 15px;
+        left: 50.5%;
         bottom: 70px;
         box-shadow: 0 16px 32px rgba(0, 123, 255, 0.3);
     }
@@ -203,6 +294,8 @@
         border-radius: 6px;
         overflow: hidden;
         transition: all 0.2s ease;
+
+
     }
 
     .cbx:not(:last-child) {
@@ -436,105 +529,336 @@
         opacity: 1
     }
 
-/*slds spinner*/
+    /*slds spinner*/
 
-    .slds-spinner_container{
-        position:absolute;
-        top:0;
-        right:0;
-        bottom:0;
-        left:0;
-        z-index:9050;
-        background-color:hsla(0,0%,100%,.75);
-        visibility:visible;
-        opacity:1;
-        transition:opacity .2s ease,visibility 0;
-        transition-delay:0s,.3s;
-        display:none
+    .slds-spinner_container {
+        position: absolute;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        left: 0;
+        z-index: 9050;
+        background-color: hsla(0, 0%, 100%, .75);
+        visibility: visible;
+        opacity: 1;
+        transition: opacity .2s ease, visibility 0;
+        transition-delay: 0s, .3s;
+        display: none
     }
-.slds-spinner{
-    position:absolute;
-    top:50%;
-    left:50%;
-    z-index:9051;
-    transform:translate(-50%,-50%) rotate(90deg)
-}
-.slds-spinner,
-.slds-spinner__dot-a,
-.slds-spinner__dot-b{
-    transform-origin:50% 50%;
-    will-change:transform
-}
-.slds-spinner__dot-a,.slds-spinner__dot-b{
-    position:absolute;top:0;left:0;width:100%
-}
-.slds-spinner:after,
-.slds-spinner:before,.slds-spinner__dot-a:after,.slds-spinner__dot-a:before,.slds-spinner__dot-b:after,.slds-spinner__dot-b:before{
-    content:"";position:absolute;
-    background:#1589EE;
-    border-radius:50%;
-    animation-duration:1s;
-    animation-iteration-count:infinite;
-    transform:translateZ(0)
-}
-.slds-spinner__dot-a{
-    transform:rotate(60deg)
-}
-.slds-spinner__dot-b{
-    transform:rotate(120deg)
-}
-.slds-spinner:before{
-    animation-delay:-.083s
-}
-.slds-spinner__dot-a:before{
-    animation-delay:.083s
-}
-.slds-spinner__dot-b:before{
-    animation-delay:.25s
-}
-.slds-spinner:after{
-    animation-delay:.41666667s
-}
-.slds-spinner__dot-a:after{
-    animation-delay:.583s
-}
-.slds-spinner__dot-b:after{
-    animation-delay:.75s
-}
-@keyframes dotsBounceBefore-medium {
-0%{transform:translateZ(0)}
-60%{transform:translateZ(0);animation-timing-function:cubic-bezier(.55,.085,.68,.53)}
-80%{transform:translate3d(-.5rem,0,0);animation-timing-function:cubic-bezier(0,1.11,.7,1.43)}
-to{transform:translateZ(0)}
-}
-@keyframes dotsBounceAfter-medium {
-0%{transform:translateZ(0)}
-60%{transform:translateZ(0);animation-timing-function:cubic-bezier(.55,.085,.68,.53)}
-80%{transform:translate3d(.5rem,0,0);animation-timing-function:cubic-bezier(0,1.11,.7,1.43)}
-to{transform:translateX(0)}
-}
-.slds-spinner--large,.slds-spinner_large{
-    width:2.75rem
-}
-.slds-spinner--large .slds-spinner__dot-a:after,.slds-spinner--large .slds-spinner__dot-a:before,.slds-spinner--large .slds-spinner__dot-b:after,.slds-spinner--large .slds-spinner__dot-b:before,.slds-spinner--large.slds-spinner:after,.slds-spinner--large.slds-spinner:before,.slds-spinner_large .slds-spinner__dot-a:after,.slds-spinner_large .slds-spinner__dot-a:before,.slds-spinner_large .slds-spinner__dot-b:after,.slds-spinner_large .slds-spinner__dot-b:before,.slds-spinner_large.slds-spinner:after,.slds-spinner_large.slds-spinner:before{width:.625rem;height:.625rem}
-.slds-spinner--large .slds-spinner__dot-a:before,.slds-spinner--large .slds-spinner__dot-b:before,.slds-spinner--large.slds-spinner:before,.slds-spinner_large .slds-spinner__dot-a:before,.slds-spinner_large .slds-spinner__dot-b:before,.slds-spinner_large.slds-spinner:before{animation-name:dotsBounceBefore-medium;top:-.3125rem;left:-.3125rem}
-.slds-spinner--large .slds-spinner__dot-a:after,.slds-spinner--large .slds-spinner__dot-b:after,.slds-spinner--large.slds-spinner:after,.slds-spinner_large .slds-spinner__dot-a:after,.slds-spinner_large .slds-spinner__dot-b:after,.slds-spinner_large.slds-spinner:after{animation-name:dotsBounceAfter-medium;top:-.3125rem;right:-.3125rem}
-@keyframes dotsBounceBefore-large {
-0%{transform:translateZ(0)}
-60%{transform:translateZ(0);animation-timing-function:cubic-bezier(.55,.085,.68,.53)}
-80%{transform:translate3d(-.75rem,0,0);animation-timing-function:cubic-bezier(0,1.11,.7,1.43)}
-to{transform:translateX(0)}
-}
-@keyframes dotsBounceAfter-large {
-0%{transform:translateZ(0)}
-60%{transform:translateZ(0);animation-timing-function:cubic-bezier(.55,.085,.68,.53)}
-80%{transform:translate3d(.75rem,0,0);animation-timing-function:cubic-bezier(0,1.11,.7,1.43)}
-to{transform:translateX(0)}
-}
+
+    .slds-spinner {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        z-index: 9051;
+        transform: translate(-50%, -50%) rotate(90deg)
+    }
+
+    .slds-spinner,
+    .slds-spinner__dot-a,
+    .slds-spinner__dot-b {
+        transform-origin: 50% 50%;
+        will-change: transform
+    }
+
+    .slds-spinner__dot-a,
+    .slds-spinner__dot-b {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%
+    }
+
+    .slds-spinner:after,
+    .slds-spinner:before,
+    .slds-spinner__dot-a:after,
+    .slds-spinner__dot-a:before,
+    .slds-spinner__dot-b:after,
+    .slds-spinner__dot-b:before {
+        content: "";
+        position: absolute;
+        background: #1589EE;
+        border-radius: 50%;
+        animation-duration: 1s;
+        animation-iteration-count: infinite;
+        transform: translateZ(0)
+    }
+
+    .slds-spinner__dot-a {
+        transform: rotate(60deg)
+    }
+
+    .slds-spinner__dot-b {
+        transform: rotate(120deg)
+    }
+
+    .slds-spinner:before {
+        animation-delay: -.083s
+    }
+
+    .slds-spinner__dot-a:before {
+        animation-delay: .083s
+    }
+
+    .slds-spinner__dot-b:before {
+        animation-delay: .25s
+    }
+
+    .slds-spinner:after {
+        animation-delay: .41666667s
+    }
+
+    .slds-spinner__dot-a:after {
+        animation-delay: .583s
+    }
+
+    .slds-spinner__dot-b:after {
+        animation-delay: .75s
+    }
+
+    @keyframes dotsBounceBefore-medium {
+        0% {
+            transform: translateZ(0)
+        }
+
+        60% {
+            transform: translateZ(0);
+            animation-timing-function: cubic-bezier(.55, .085, .68, .53)
+        }
+
+        80% {
+            transform: translate3d(-.5rem, 0, 0);
+            animation-timing-function: cubic-bezier(0, 1.11, .7, 1.43)
+        }
+
+        to {
+            transform: translateZ(0)
+        }
+    }
+
+    @keyframes dotsBounceAfter-medium {
+        0% {
+            transform: translateZ(0)
+        }
+
+        60% {
+            transform: translateZ(0);
+            animation-timing-function: cubic-bezier(.55, .085, .68, .53)
+        }
+
+        80% {
+            transform: translate3d(.5rem, 0, 0);
+            animation-timing-function: cubic-bezier(0, 1.11, .7, 1.43)
+        }
+
+        to {
+            transform: translateX(0)
+        }
+    }
+
+    .slds-spinner--large,
+    .slds-spinner_large {
+        width: 2.75rem
+    }
+
+    .slds-spinner--large .slds-spinner__dot-a:after,
+    .slds-spinner--large .slds-spinner__dot-a:before,
+    .slds-spinner--large .slds-spinner__dot-b:after,
+    .slds-spinner--large .slds-spinner__dot-b:before,
+    .slds-spinner--large.slds-spinner:after,
+    .slds-spinner--large.slds-spinner:before,
+    .slds-spinner_large .slds-spinner__dot-a:after,
+    .slds-spinner_large .slds-spinner__dot-a:before,
+    .slds-spinner_large .slds-spinner__dot-b:after,
+    .slds-spinner_large .slds-spinner__dot-b:before,
+    .slds-spinner_large.slds-spinner:after,
+    .slds-spinner_large.slds-spinner:before {
+        width: .625rem;
+        height: .625rem
+    }
+
+    .slds-spinner--large .slds-spinner__dot-a:before,
+    .slds-spinner--large .slds-spinner__dot-b:before,
+    .slds-spinner--large.slds-spinner:before,
+    .slds-spinner_large .slds-spinner__dot-a:before,
+    .slds-spinner_large .slds-spinner__dot-b:before,
+    .slds-spinner_large.slds-spinner:before {
+        animation-name: dotsBounceBefore-medium;
+        top: -.3125rem;
+        left: -.3125rem
+    }
+
+    .slds-spinner--large .slds-spinner__dot-a:after,
+    .slds-spinner--large .slds-spinner__dot-b:after,
+    .slds-spinner--large.slds-spinner:after,
+    .slds-spinner_large .slds-spinner__dot-a:after,
+    .slds-spinner_large .slds-spinner__dot-b:after,
+    .slds-spinner_large.slds-spinner:after {
+        animation-name: dotsBounceAfter-medium;
+        top: -.3125rem;
+        right: -.3125rem
+    }
+
+    @keyframes dotsBounceBefore-large {
+        0% {
+            transform: translateZ(0)
+        }
+
+        60% {
+            transform: translateZ(0);
+            animation-timing-function: cubic-bezier(.55, .085, .68, .53)
+        }
+
+        80% {
+            transform: translate3d(-.75rem, 0, 0);
+            animation-timing-function: cubic-bezier(0, 1.11, .7, 1.43)
+        }
+
+        to {
+            transform: translateX(0)
+        }
+    }
+
+    @keyframes dotsBounceAfter-large {
+        0% {
+            transform: translateZ(0)
+        }
+
+        60% {
+            transform: translateZ(0);
+            animation-timing-function: cubic-bezier(.55, .085, .68, .53)
+        }
+
+        80% {
+            transform: translate3d(.75rem, 0, 0);
+            animation-timing-function: cubic-bezier(0, 1.11, .7, 1.43)
+        }
+
+        to {
+            transform: translateX(0)
+        }
+    }
+
+    /*STYLE ALERT BANNER*/
+    .cloudpages-notification {
+        margin-left: 35%;
+        margin-top: -30px;
+        position: absolute;
+        width: 30%;
+        display: none;
+
+
+    }
+
+    .alert-error {
+        color: #b41111;
+        background-color: #e4a3a3;
+        border-color: #e4a3a3;
+    }
+
+
+
+
+
+    /* START*/
+
+    .box {
+        background: #fff;
+        border-radius: 2px;
+        box-shadow: 0 0 50px rgba(0, 0, 0, 0.1);
+        margin: 30px 5%;
+        padding: 5%;
+        line-height: 30px;
+    }
+
+    @media (min-width: 544px) {
+        .box {
+            margin: 40px auto;
+            max-width: 440px;
+            padding: 40px;
+        }
+    }
+
+    .directory-list ul {
+        margin-left: 10px;
+        padding-left: 20px;
+        border-left: 1px dashed #ddd;
+    }
+
+    .directory-list {
+        margin-left: -40%;
+    }
+
+    .directory-list li {
+        list-style: none;
+        color: #888;
+        font-size: 17px;
+        font-style: italic;
+        font-weight: normal;
+        cursor: pointer;
+        width: 180px;
+        text-align: left;
+    }
+
+    .directory-list a {
+        border-bottom: 1px solid transparent;
+        color: #888;
+        text-decoration: none;
+        transition: all 0.2s ease;
+    }
+
+    .directory-list .folder,
+    .directory-list .folder>a {
+        color: #777;
+        font-weight: bold;
+    }
+
+    .directory-list li:before {
+        margin-right: 10px;
+        content: "";
+        height: 20px;
+        vertical-align: middle;
+        width: 20px;
+        background-repeat: no-repeat;
+        display: inline-block;
+        background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><path fill='lightgrey' d='M85.714,42.857V87.5c0,1.487-0.521,2.752-1.562,3.794c-1.042,1.041-2.308,1.562-3.795,1.562H19.643 c-1.488,0-2.753-0.521-3.794-1.562c-1.042-1.042-1.562-2.307-1.562-3.794v-75c0-1.487,0.521-2.752,1.562-3.794 c1.041-1.041,2.306-1.562,3.794-1.562H50V37.5c0,1.488,0.521,2.753,1.562,3.795s2.307,1.562,3.795,1.562H85.714z M85.546,35.714 H57.143V7.311c3.05,0.558,5.505,1.767,7.366,3.627l17.41,17.411C83.78,30.209,84.989,32.665,85.546,35.714z' /></svg>");
+        background-position: center 2px;
+        background-size: 60% auto;
+    }
+
+    .directory-list li.folder:before {
+        background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><path fill='lightblue' d='M96.429,37.5v39.286c0,3.423-1.228,6.361-3.684,8.817c-2.455,2.455-5.395,3.683-8.816,3.683H16.071 c-3.423,0-6.362-1.228-8.817-3.683c-2.456-2.456-3.683-5.395-3.683-8.817V23.214c0-3.422,1.228-6.362,3.683-8.817 c2.455-2.456,5.394-3.683,8.817-3.683h17.857c3.422,0,6.362,1.228,8.817,3.683c2.455,2.455,3.683,5.395,3.683,8.817V25h37.5 c3.422,0,6.361,1.228,8.816,3.683C95.201,31.138,96.429,34.078,96.429,37.5z' /></svg>");
+        background-position: center top;
+        background-size: 80% auto;
+    }
+
+    .directory-list li.folder.selected {
+        text-decoration: underline;
+    }
+
+    /*END*/
 </style>
-<link rel="stylesheet" href="style.css">
-<div class="header">
-    <h1>Phraseanet Demo</h1>
+
+<!-- ALERT BANNER-->
+<div class="cloudpages-notification">
+    <div data-control="notification" class="fuelux banner">
+        <div class="alert alert-success">
+            <button type="button" class="close" data-dismiss="alert">×</button>
+            <span style="font-weight: bold;" class="message"></span>
+            <span class="submessage "></span>
+        </div>
+    </div>
+</div>
+<div class="header" style="margin-top: 2%;">
+    <div style="width: 600px;
+        height: 165px;
+        background: url(https://www.phraseanet.com/wp-content/uploads/2016/05/phrasea-logo-PAYSAGE.jpg);
+        background-size: cover;
+        background-position: center;
+        margin:auto;
+        ">
+    </div>
+
     <form class="form" method="POST">
         <div class="search">
             <input type="text" name="query" placeholder="Recherche" id="query-text">
@@ -556,13 +880,7 @@ to{transform:translateX(0)}
                     <svg width="12px" height="10px">
                         <use xlink:href="#check"></use>
                     </svg></span><span>Documents</span></label>
-            <!-- <input class="inp-cbx" id="gif" type="checkbox" />
-        <label class="cbx" for="gif"><span>
-            <svg width="12px" height="10px">
-              <use xlink:href="#check"></use>
-            </svg></span><span>Gif</span></label>
-         -->
-            <!--SVG Sprites-->
+
             <svg class="inline-svg">
                 <symbol id="check" viewBox="0 0 12 10">
                     <polyline points="1.5 6 4.5 9 10.5 1"></polyline>
@@ -571,47 +889,172 @@ to{transform:translateX(0)}
         </div>
     </form>
 
-</div>
-
-<div class="slds-spinner_container">
-    <div role="status" class="slds-spinner slds-spinner_large slds-spinner_brand"><span class="slds-assistive-text"></span>
-        <div class="slds-spinner__dot-a"></div>
-        <div class="slds-spinner__dot-b"></div>
+    <!-- HERE -->
+    <div class="box" style="position:absolute;padding-right:1%;left:1%;bottom:7%;top:18%;width:17%;overflow:scroll;">
+        <ul class="directory-list">
+            <li class="root folder"></li>
+        </ul>
     </div>
+
+    <div class="container">
+        <form>
+            <label class="checkbox-inline">
+
+            </label>
+        </form>
+    </div>
+
 </div>
 
+<!-- LIGHTNING SPINNER-->
 <div class="container">
     <div class="overlay"></div>
-    <!--    
-     <div class="spanner">
-        <div class="loader"></div>
-        <p>Recherche en cours...</p>
-    </div> -->
+    <div class="slds-spinner_container">
+        <div role="status" class="slds-spinner slds-spinner_large slds-spinner_brand"><span
+                class="slds-assistive-text"></span>
+            <div class="slds-spinner__dot-a"></div>
+            <div class="slds-spinner__dot-b"></div>
+        </div>
+    </div>
 </div>
 
-    <ul class="results">
-
-
-    </ul>
-    <div class="btn-send">
-        <button disabled class="btn btn-primary">Add to Content</button>
-    </div>
+<!-- IMAGE RESULTS CONTAINER-->
+<ul class="results" style="margin-left :20%;margin-right :20%"></ul>
+<div class="btn-send" style="margin-left:300px">
+    <button class="btn btn-primary" disabled>Add to Content</button>
+</div>
 <!-- <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script> -->
 <script runat="client">
-    
+
+    var datas = JSON.stringify( %%=v(@data) =%% ) ?? 'empty';
+    datas = JSON.parse(datas);
+
+    // READ CATEGORIES DATA ON LOAD 
+    $(document).ready(function () {
+        if (datas != 'empty') {
+            console.log("SIZE: " + datas.length);
+            if (datas.length > 0) {
+                var root = datas.filter(c => c.parentId === 0);
+                var elem = document.querySelector(".directory-list .root");
+                elem.setAttribute('id', root[0].id);
+                elem.innerHTML = root[0].name;
+                document.querySelector(".directory-list").appendChild(elem);
+                createChildren(root[0].id, elem);
+
+                elem.addEventListener('click', function (e) {
+                    var allLi = document.querySelectorAll(".directory-list li");
+                    allLi.forEach(function (selected) {
+                        if (selected.classList.contains("selected")) {
+                            selected.classList.remove("selected");
+                        }
+                    })
+                    elem.classList.add("selected");
+                })
+            } else {
+                //TODO
+                console.log("No Folder found");
+            }
+        } else {
+            //TODO
+            console.log("AN ERROR OCCURED");
+        }
+    });
+
+    function createChildren(categorie, parentHtml) {
+        var children = getChildren(categorie);
+        var thisChild;
+        if (children.length > 0) {
+            var parentUl = document.createElement('ul');
+            children.forEach(function (child) {
+                var childLi = document.createElement('li');
+                childLi.setAttribute('id', child.id);
+                childLi.innerHTML = child.name;
+                childLi.classList.add("folder");
+
+                childLi.addEventListener('click', function (e) {
+                    setSelection(childLi);
+                    if (childLi.childElementCount <= 0) {
+                        createChildren(e.target.id, childLi);
+                    } else {
+                        //hide children
+                        getChildrenLiElements(childLi);
+                    }
+                    e.stopPropagation();
+                });
+                parentUl.appendChild(childLi);
+            });
+            parentHtml.appendChild(parentUl);
+        }
+
+    }
+
+    function setSelection(childLi) {
+        var allSelection = document.querySelectorAll(".directory-list li");
+        allSelection.forEach(function (selected) {
+            if (selected.classList.contains("selected")) {
+                selected.classList.remove("selected");
+            }
+        })
+        childLi.classList.add("selected");
+    }
+
+    function getChildren(categorie) {
+        children = datas.filter(data => data.parentId == categorie);
+        return children;
+    }
+
+    function getChildrenLiElements(parent) {
+        for (i = 0; i < parent.childElementCount; i++) {
+            parent.children.item(i).style.display = parent.children.item(i).style.display === 'none' ? 'block' : 'none';
+        }
+    }
+
+    //ALERT MESSAGE TYPES
+    const MessageType = {
+        SUCCESS: 'success',
+        ERROR: 'error',
+        INFO: 'info'
+    }
+
+    //ALERT MESSAGE CONTROLLER
+    function notify(message, MessageType) {
+
+        var notifBanner = $(".cloudpages-notification");
+        var parent = notifBanner.children(".banner").children(".alert-success");
+
+        if (MessageType == "error") {
+            parent.removeClass("alert-success").addClass("alert-error");
+            parent.children(".message").text("Erreur: ");
+        } else if (MessageType == "success") {
+            parent.removeClass("alert-error").addClass("alert-success");
+            parent.children(".message").text("Success: ");
+        }
+        parent.children(".submessage").text(message || "");
+
+        notifBanner.fadeIn();
+        setTimeout(function () {
+            notifBanner.fadeOut();
+        }, 5000);
+    }
+
+    /* SPINNER CONTROLLER */
     function showSpinner() {
         $spinner = document.getElementsByClassName("slds-spinner_container")[0];
         $spinner.style.display = "block";
     }
+
     function hideSpinner() {
         $spinner.style.display = "none";
     }
 
+    /*SEARCH FILE (POST)*/
     function search(query, record_type) {
-        fetch('https://teranga-cloud.xidmapreview.com/api/v1/search/?oauth_token=ydfwryYOCUGLRwEBj7C9m7ipSsUnksGr&per_page=15&query=' + query + record_type, {
+        fetch('https://teranga-cloud.xidmapreview.com/api/v1/search/?oauth_token=ydfwryYOCUGLRwEBj7C9m7ipSsUnksGr&per_page=21&query=' + query + record_type, {
             method: 'POST',
+            headers: { 'Accept': "application/vnd.phraseanet.record-extended+json" }
+
         }).then(function (response) {
-            // The API call was successful!
+            // The API called was successful!
             if (response.ok) {
                 return response.json();
             } else {
@@ -619,36 +1062,61 @@ to{transform:translateX(0)}
             }
         }).then(function (data) {
             // This is the JSON from our response
-            console.log(data);
             showResults(data.response.results)
-            hideSpinner();
 
         }).catch(function (err) {
             // There was an error
-            hideSpinner();
             console.warn('Something went wrong.', err);
-        });
+        }).finally(function () {
+            hideSpinner();
+        })
     }
 
+    var btnSend = document.querySelector(".btn-send");
+
+    /*DYNAMICALLY POPULATE RESULTS*/
     function showResults(data) {
         console.log('Response >>>>', data);
-        data.records.forEach(function (record, index) {
-            //console.log('Records >>>>', record.sha256);
-            var id = 'myCheckbox' + (index + 1)
+        if (data.records.length > 0) {
+
+            data.records.forEach(function (record, index) {
+                var li = document.createElement('li');
+                var id = 'myCheckbox' + (index + 1)
+                var ipt = document.createElement('input');
+                ipt.setAttribute('data-original_name', record.original_name);
+                ipt.setAttribute('data-databox_id', record.databox_id);
+                ipt.setAttribute('data-id', record.record_id);
+                ipt.setAttribute('data-url', record.subdefs[0].url);
+                ipt.setAttribute('data-mime_type', record.mime_type);
+                ipt.setAttribute('type', 'checkbox');
+                ipt.setAttribute('id', id);
+                var label = document.createElement('label');
+                label.setAttribute('for', id);
+                var img = document.createElement('img')
+                img.setAttribute('title', record.original_name);
+                img.setAttribute('src', record.thumbnail.url);
+                label.appendChild(img)
+                li.appendChild(ipt)
+                li.appendChild(label)
+                document.querySelector("ul.results").appendChild(li);
+
+                ipt.onclick = function () {
+                    btnSend.children[0].disabled = !document.querySelectorAll(".results input:checked").length > 0
+                }
+
+            });
+            btnSend.style.display = "block";
+        } else {
+            btnSend.style.display = "none";
             var li = document.createElement('li');
-            var ipt = document.createElement('input');
-            ipt.setAttribute('type', 'checkbox');
-            ipt.setAttribute('id', id);
-            var label = document.createElement('label');
-            label.setAttribute('for', id);
-            var img = document.createElement('img');
-            img.setAttribute('src', record.thumbnail.url);
-            label.appendChild(img)
-            li.appendChild(ipt)
-            li.appendChild(label)
+            var info = document.createElement('h5');
+            info.classList.add('info-align')
+            info.innerHTML = "Aucun résultat trouvé!"
+            li.appendChild(info)
             document.querySelector("ul.results").appendChild(li);
 
-        });
+        }
+
     }
 
     var searchBtn = document.querySelector("#search-btn");
@@ -658,17 +1126,14 @@ to{transform:translateX(0)}
         console.log("Saving value", query);
         var filterValue = []
         document.querySelectorAll(".form input:checked").forEach(function (element) {
-            //console.log("selecteddddd value", element.value);
             filterValue.push('&record_type');
             if (element.value != 'all') {
                 filterValue.push(element.value);
             }
-            console.log("record_type value", filterValue.join('='));
         });
         var record_type = filterValue.join('=')
         var childs = document.querySelectorAll("ul.results li");
         var results = document.querySelector("ul.results");
-        //console.log("childs value", childs);
         showSpinner();
 
         if (childs.length > 0) {
@@ -677,61 +1142,97 @@ to{transform:translateX(0)}
             })
         }
         search(query, record_type)
-        //alert("Evènement de click détecté"); 
     }
-    var btnSend = document.querySelector(".btn-send");
     var assetList = [];
 
+    /*POST DATAS TO MARKETING CLOUD*/
     btnSend.onclick = function (e) {
-        e.preventDefault();
-        document.querySelectorAll(".results input:checked ").forEach(function (element) {
-            console.log("selected Image", element);
-            getBase64(element);
+        e.preventDefault()
+        // Tableau des éléments à enregistrer dans marketing cloud
+        var selectedResults = []
+        document.querySelectorAll(".results input:checked").forEach(function (element) {
+            var categorie = document.querySelector(".directory-list .selected") ?? 'empty';
+            if (categorie != 'empty') {
+                console.log('categorie: ' + categorie.id)
+                obj = {
+                    'id': element.dataset.id,
+                    'databox_id': element.dataset.databox_id,
+                    'url': element.dataset.url,
+                    'name': element.dataset.original_name,
+                    'categorie': categorie.id
+                }
+                selectedResults.push(obj);
+                prepareData(obj);
+
+            }
+
+
         })
     }
 
+
+    /*ASSET ID LIST*/
     var assetTypes = { ai: 16, psd: 17, pdd: 18, eps: 19, gif: 20, jpe: 21, jpeg: 22, jpg: 23, jp2: 24, jpx: 25, pict: 26, pct: 27, png: 28, tif: 29, tiff: 30, tga: 31, bmp: 32, wmf: 33, vsd: 34, pnm: 35, pgm: 36, pbm: 37, ppm: 38, svg: 39, "3fr": 40, ari: 41, arw: 42, bay: 43, cap: 44, crw: 45, cr2: 46, dcr: 47, dcs: 48, dng: 49, drf: 50, eip: 51, erf: 52, fff: 53, iiq: 54, k25: 55, kdc: 56, mef: 57, mos: 58, mrw: 59, nef: 60, nrw: 61, orf: 62, pef: 63, ptx: 64, pxn: 65, raf: 66, raw: 67, rw2: 68, rwl: 69, rwz: 70, srf: 71, sr2: 72, srw: 73, x3f: 74, "3gp": 75, "3gpp": 76, "3g2": 77, "3gp2": 78, asf: 79, avi: 80, m2ts: 81, mts: 82, dif: 83, dv: 84, mkv: 85, mpg: 86, f4v: 87, flv: 88, mjpg: 89, mjpeg: 90, mxf: 91, mpeg: 92, mp4: 93, m4v: 94, mp4v: 95, mov: 96, swf: 97, wmv: 98, rm: 99, ogv: 100, indd: 101, indt: 102, incx: 103, wwcx: 104, doc: 105, docx: 106, dot: 107, dotx: 108, mdb: 109, mpp: 110, ics: 111, xls: 112, xlsx: 113, xlk: 114, xlsm: 115, xlt: 116, xltm: 117, csv: 118, tsv: 119, tab: 120, pps: 121, ppsx: 122, ppt: 123, pptx: 124, pot: 125, thmx: 126, pdf: 127, ps: 128, qxd: 129, rtf: 130, sxc: 131, sxi: 132, sxw: 133, odt: 134, ods: 135, ots: 136, odp: 137, otp: 138, epub: 139, dvi: 140, key: 141, keynote: 142, pez: 143, aac: 144, m4a: 145, au: 146, aif: 147, aiff: 148, aifc: 149, mp3: 150, wav: 151, wma: 152, midi: 153, oga: 154, ogg: 155, ra: 156, vox: 157, voc: 158, "7z": 159, arj: 160, bz2: 161, cab: 162, gz: 163, gzip: 164, iso: 165, lha: 166, sit: 167, tgz: 168, jar: 169, rar: 170, tar: 171, html: 175, xhtml: 176, xht: 177, css: 178, js: 181, json: 182, atom: 183, rss: 184, xml: 185, xsl: 186, xslt: 187, text: 193, txt: 194 };
 
-    function getBase64(file) {
-        console.log("Reading...");
-        var reader = new FileReader();
+    //PREPARE FILE DATA (FILE INFO) FOR MARKETING CLOUD
+    function prepareData(obj) {
         var fileData = {};
 
-        reader.readAsDataURL(file);
-        reader.onload = function () {
-            var fileEncoded = reader.result;
-            var base64enc = fileEncoded.split(";base64,")[1];
-            var fileName = file.name;
-
-            fileData.fileName = fileName.split(".")[0];
-            fileData.assetName = fileName.split(".")[1];
-            fileData.base64enc = base64enc;
+        getBase64FromUrl(obj).then((base64data) => {
+            fileData.fileName = obj.name.split(".")[0];
+            fileData.assetName = obj.name.split(".")[1];
+            fileData.base64enc = base64data.split(',')[1];
             fileData.assetTypeID = assetTypes[fileData.assetName.toLowerCase()];
+            fileData.category = obj.categorie;
+            console.log('ready:  ' + obj.categorie)
+            postToMc(fileData);
+        });
 
-            console.log("type " + fileData.assetTypeID);
-            fileDataList.push(fileData);
-            console.log("Name " + fileData.fileName);
-            //console.log("Ext " + fileData.assetName);
-            //console.log("Asset ID " + fileData.assetTypeID);
-            //console.log("Base64 " + fileData.base64enc);
-            fetch("https://pub.s10.exacttarget.com/vy12vqzmxp3", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify(fileData)
-            })
-                .then(function (res) {
-                    console.log("Success!");
-                })
-                .catch(function (err) {
-                    console.log("Error!");
-                });
-
-            reader.onerror = function (error) {
-                //console.log('Error: ', error);
-            };
-        };
 
     }
+
+    //CONVERT IMAGE URL TO BLOB DATA
+    const getBase64FromUrl = async (obj) => {
+        const result = await fetch(obj.url);
+        const blob = await result.blob();
+        return new Promise((resolve) => {
+            const reader = new FileReader();
+            reader.readAsDataURL(blob);
+            reader.onloadend = function () {
+                const base64data = reader.result;
+                //console.log("in res" + base64data);
+                resolve(base64data)
+            }
+        });
+        console.log("out res" + base64data);
+
+    }
+
+    //PUSHING ASSET TO MARKETING CLOUD
+    function postToMc(data) {
+        //showSpinner();
+        console.log(JSON.stringify(data.categorie))
+
+        fetch("https://pub.s10.exacttarget.com/vy12vqzmxp3", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify(data)
+
+        })
+            .then(function (res) {
+                console.log("in res: " + JSON.stringify(res));
+                notify("enrégistré(s) avec succès!", MessageType.SUCCESS);
+            })
+            .catch(function (err) {
+                notify("une erreur s'est produite lors de l'enregistrement.Reésssayer!", MessageType.ERROR);
+            }).finally(function () {
+                hideSpinner();
+            })
+
+    }
+
+
+
 </script>
