@@ -1,0 +1,16 @@
+{
+    "host": "mc-phrasea.atwebpages.com",
+    "username": "3757418_khalidousowba",
+    "password": "kaliSpace021",
+    "remotePath": "mc-phrasea.atwebpages.com",
+    "protocol": "ftp",
+    "port": 21,
+    "fileNameEncoding": "utf8",
+    "autoUpload": true,
+    "autoDelete": false,
+    "autoDownload": false,
+    "ignore": [
+        ".git",
+        "/.vscode"
+    ]
+}

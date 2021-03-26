@@ -1,0 +1,19 @@
+{
+  "ftp://mc-phrasea.atwebpages.com:21@3757418_khalidousowba": {
+    "mc-phrasea.atwebpages.com": {
+      "index.html": {
+        "type": "-",
+        "size": 39480,
+        "lmtime": 0,
+        "modified": false
+      },
+      "phraseanet_integration_client.html": {
+        "type": "-",
+        "size": 38763,
+        "lmtime": 0,
+        "modified": false
+      }
+    }
+  },
+  "$version": 1
+}

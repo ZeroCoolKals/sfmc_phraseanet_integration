@@ -1,5 +1,6 @@
 <script runat="server">
     Platform.Load("core", "1");
+    var jsonData = Platform.Request.GetPostData();
 
     var end_point = "";
     var accessToken = "";
@@ -47,10 +48,40 @@
             Write(Stringify(error));
         }
     }
-    getCategories();
 
+    function createAsset() {
+        auth();
+        var asset = Platform.Function.ParseJSON(jsonData);
+        var headerNames = ["Authorization"];
+        var headerValues = ["Bearer " + accessToken];
+        var requestUrl = end_point + "asset/v1/content/assets";
+
+        var jsonBody = {
+            "category": { "id": parseInt(asset.categorie) },
+            "name": asset.fileName,
+            "assetType": {
+                "name": asset.assetName,
+                "id": asset.assetTypeID
+            },
+            "file": asset.base64enc
+        };
+
+        Write("<br/>");
+        try {
+            var createdAsset = HTTP.Post(requestUrl, contentType, Stringify(jsonBody), headerNames, headerValues);
+        } catch (error) {
+            // Write(Stringify(error));
+        }
+    }
+
+    if (jsonData) {
+        createAsset();
+    } else {
+        getCategories();
+    }
 
 </script>
+
 <meta charset="utf-8">
 <title>Phraseanet Demo</title>
 
@@ -60,16 +91,14 @@
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
 
+
 <!--BOOTSTRAP -->
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
 
-
-<!--JSTREE -->
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jstree/3.2.1/themes/default/style.min.css" />
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/1.12.1/jquery.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jstree/3.2.1/jstree.min.js"></script>
-
+<!--Progress indicator -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/progressbar.js/1.0.1/progressbar.min.js"> </script>
+<link href="https://fonts.googleapis.com/css?family=Raleway:400,300,600,800,900" rel="stylesheet" type="text/css">
 
 <style>
     h2 {
@@ -836,8 +865,23 @@
         text-decoration: underline;
     }
 
+    #container {
+        width: 50px;
+        height: 50px;
+        position: ABSOLUTE;
+        LEFT: 65%;
+        top: 11%;
+    }
+
+
+
+
     /*END*/
 </style>
+
+<div id="container">
+
+</div>
 
 <!-- ALERT BANNER-->
 <div class="cloudpages-notification">
@@ -910,8 +954,8 @@
 <div class="container">
     <div class="overlay"></div>
     <div class="slds-spinner_container">
-        <div role="status" class="slds-spinner slds-spinner_large slds-spinner_brand"><span
-                class="slds-assistive-text"></span>
+        <div role="status" class="slds-spinner slds-spinner_large slds-spinner_brand">
+            <span class="slds-assistive-text"></span>
             <div class="slds-spinner__dot-a"></div>
             <div class="slds-spinner__dot-b"></div>
         </div>
@@ -928,7 +972,6 @@
 
     var datas = JSON.stringify( %%=v(@data) =%% ) ?? 'empty';
     datas = JSON.parse(datas);
-
     // READ CATEGORIES DATA ON LOAD 
     $(document).ready(function () {
         if (datas != 'empty') {
@@ -1076,9 +1119,7 @@
 
     /*DYNAMICALLY POPULATE RESULTS*/
     function showResults(data) {
-        console.log('Response >>>>', data);
         if (data.records.length > 0) {
-
             data.records.forEach(function (record, index) {
                 var li = document.createElement('li');
                 var id = 'myCheckbox' + (index + 1)
@@ -1114,7 +1155,6 @@
             info.innerHTML = "Aucun résultat trouvé!"
             li.appendChild(info)
             document.querySelector("ul.results").appendChild(li);
-
         }
 
     }
@@ -1149,24 +1189,20 @@
     btnSend.onclick = function (e) {
         e.preventDefault()
         // Tableau des éléments à enregistrer dans marketing cloud
-        var selectedResults = []
+        var selectedResults = [];
         document.querySelectorAll(".results input:checked").forEach(function (element) {
             var categorie = document.querySelector(".directory-list .selected") ?? 'empty';
             if (categorie != 'empty') {
-                console.log('categorie: ' + categorie.id)
+                var categorie = parseInt(categorie.id)
                 obj = {
                     'id': element.dataset.id,
                     'databox_id': element.dataset.databox_id,
                     'url': element.dataset.url,
                     'name': element.dataset.original_name,
-                    'categorie': categorie.id
+                    'categorie': categorie
                 }
-                selectedResults.push(obj);
                 prepareData(obj);
-
             }
-
-
         })
     }
 
@@ -1177,62 +1213,99 @@
     //PREPARE FILE DATA (FILE INFO) FOR MARKETING CLOUD
     function prepareData(obj) {
         var fileData = {};
-
         getBase64FromUrl(obj).then((base64data) => {
             fileData.fileName = obj.name.split(".")[0];
             fileData.assetName = obj.name.split(".")[1];
             fileData.base64enc = base64data.split(',')[1];
             fileData.assetTypeID = assetTypes[fileData.assetName.toLowerCase()];
-            fileData.category = obj.categorie;
-            console.log('ready:  ' + obj.categorie)
+            fileData.categorie = obj.categorie;
             postToMc(fileData);
         });
-
 
     }
 
     //CONVERT IMAGE URL TO BLOB DATA
     const getBase64FromUrl = async (obj) => {
-        const result = await fetch(obj.url);
-        const blob = await result.blob();
-        return new Promise((resolve) => {
-            const reader = new FileReader();
-            reader.readAsDataURL(blob);
-            reader.onloadend = function () {
-                const base64data = reader.result;
-                //console.log("in res" + base64data);
-                resolve(base64data)
-            }
-        });
-        console.log("out res" + base64data);
+        try {
+            const result = await fetch(obj.url);
+            const blob = await result.blob();
+            return new Promise((resolve) => {
+                const reader = new FileReader();
+                reader.readAsDataURL(blob);
+                reader.onloadend = function () {
+                    const base64data = reader.result;
+                    resolve(base64data);
+                }
+            });
+        } catch (e) {
+
+        }
 
     }
 
     //PUSHING ASSET TO MARKETING CLOUD
     function postToMc(data) {
+        progress();
         //showSpinner();
-        console.log(JSON.stringify(data.categorie))
-
-        fetch("https://pub.s10.exacttarget.com/vy12vqzmxp3", {
+        document.querySelectorAll(".results input:checked").forEach(function (element) {
+            element.checked = false;
+        });
+        btnSend.children[0].disabled = true;
+        fetch("https://pub.s10.exacttarget.com/bw1zfxmu5ya", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
             },
             body: JSON.stringify(data)
-
         })
             .then(function (res) {
-                console.log("in res: " + JSON.stringify(res));
-                notify("enrégistré(s) avec succès!", MessageType.SUCCESS);
-            })
-            .catch(function (err) {
-                notify("une erreur s'est produite lors de l'enregistrement.Reésssayer!", MessageType.ERROR);
-            }).finally(function () {
-                hideSpinner();
-            })
+                console.log("in res: " + JSON.stringify( %%=v(@response) =%% ));
+        notify("enrégistré(s) avec succès!", MessageType.SUCCESS);
+    })
+        .catch (function (err) {
+        notify("une erreur s'est produite lors de l'enregistrement.Reésssayer!", MessageType.ERROR);
+    })
+        .finally(function () {
+        hideSpinner();
 
+    })
     }
 
 
+    /*PROGRESS INDICATOR*/
+    function progress() {
+        var progressBar =
+        var bar = new ProgressBar.Circle(container, {
+            color: '#aaa',
+            // This has to be the same size as the maximum width to
+            // prevent clipping
+            strokeWidth: 4,
+            trailWidth: 1,
+            easing: 'easeInOut',
+            duration: 1400,
+            text: {
+                autoStyleContainer: false
+            },
+            from: { color: '#aaa', width: 1 },
+            to: { color: '#333', width: 4 },
+            // Set default step function for all animate calls
+            step: function (state, circle) {
+                circle.path.setAttribute('stroke', state.color);
+                circle.path.setAttribute('stroke-width', state.width);
+
+                var value = Math.round(circle.value() * 100);
+                if (value === 0) {
+                    circle.setText('');
+                } else {
+                    circle.setText(value);
+                }
+
+            }
+        });
+        bar.text.style.fontFamily = '"Raleway", Helvetica, sans-serif';
+        bar.text.style.fontSize = '2rem';
+
+        bar.animate(1.0);  // Number from 0.0 to 1.0
+    }
 
 </script>
