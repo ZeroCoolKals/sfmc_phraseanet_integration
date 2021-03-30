@@ -7,6 +7,50 @@
         "lmtime": 0,
         "modified": false
       },
+      "Nouveau dossier": {
+        "get_categorie_server.html": {
+          "type": "-",
+          "size": 2067,
+          "lmtime": 1614588331899,
+          "modified": false
+        },
+        "phraseanet_integration_client.html": {
+          "type": "-",
+          "size": 38763,
+          "lmtime": 1616501541469,
+          "modified": false
+        },
+        "phraseanet_integration_server.html": {
+          "type": "-",
+          "size": 1782,
+          "lmtime": 1615282976727,
+          "modified": false
+        },
+        "response.json": {
+          "type": "-",
+          "size": 4514,
+          "lmtime": 1614723586082,
+          "modified": false
+        },
+        "routine.java": {
+          "type": "-",
+          "size": 12840,
+          "lmtime": 1615564293047,
+          "modified": false
+        },
+        "test.html": {
+          "type": "-",
+          "size": 39480,
+          "lmtime": 1616582205832,
+          "modified": false
+        },
+        "Untitled-1.apex": {
+          "type": "-",
+          "size": 4471,
+          "lmtime": 1613576011949,
+          "modified": false
+        }
+      },
       "phraseanet_integration_client.html": {
         "type": "-",
         "size": 38763,

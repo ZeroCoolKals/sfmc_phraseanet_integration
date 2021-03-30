@@ -970,10 +970,14 @@
 <!-- <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script> -->
 <script runat="client">
 
+    const BASE_URI = 'https://teranga-cloud.xidmapreview.com/api/';
+    var api_version = '';
+
     var datas = JSON.stringify( %%=v(@data) =%% ) ?? 'empty';
     datas = JSON.parse(datas);
     // READ CATEGORIES DATA ON LOAD 
     $(document).ready(function () {
+        getAccess();
         if (datas != 'empty') {
             console.log("SIZE: " + datas.length);
             if (datas.length > 0) {
@@ -1090,11 +1094,47 @@
         $spinner.style.display = "none";
     }
 
+    /*PHRASEANET AUTH*/
+    var clientid_value = 'test';
+    var username_value = 'test';
+    var password_value = 'test';
+    var auth_token = '';
+
+    function getAccess() {
+        console.log('GET ACCESS EXECUTED')
+        api_version = 'oauthv2/';
+        auth_token = 'ydfwryYOCUGLRwEBj7C9m7ipSsUnksGr';
+        // BASE_URI+api_version+'/token?client_id ='+ 'YOUR_CLIENT_ID& grant_type='+password +'&username=johndoe&password='+ A3ddj3w
+        var uri = BASE_URI + api_version + 'token?client_id =' + clientid_value + '&grant_type=password&username=' + username_value + '&password=' + password_value;
+        console.log('URI: ' + uri)
+        fetch(uri, {
+            method: 'GET',
+            headers: { 'Accept': "application/vnd.phraseanet.record-extended+json" },
+            mode: 'no-cors'
+
+        }).then(response => {
+            if (response.ok) {
+                return response.json();
+            } else {
+                return Promise.reject(response);
+            }
+            console.log(response.json())
+
+        }).catch(error => {
+            console.log(error)
+        })
+    }
+
     /*SEARCH FILE (POST)*/
     function search(query, record_type) {
-        fetch('https://teranga-cloud.xidmapreview.com/api/v1/search/?oauth_token=ydfwryYOCUGLRwEBj7C9m7ipSsUnksGr&per_page=21&query=' + query + record_type, {
+        var phrasea_action = 'search/';
+        api_version = 'v1/';
+        let uri = BASE_URI + api_version + phrasea_action + '?oauth_token=' + auth_token + '&per_page=21&query=' + query + record_type;
+
+        fetch(uri, {
             method: 'POST',
-            headers: { 'Accept': "application/vnd.phraseanet.record-extended+json" }
+            headers: { 'Accept': "application/vnd.phraseanet.record-extended+json" },
+            //mode: 'no-cors'
 
         }).then(function (response) {
             // The API called was successful!
@@ -1272,9 +1312,10 @@
     }
 
 
+
+
     /*PROGRESS INDICATOR*/
     function progress() {
-        var progressBar =
         var bar = new ProgressBar.Circle(container, {
             color: '#aaa',
             // This has to be the same size as the maximum width to
